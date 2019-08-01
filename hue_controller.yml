@@ -2,3 +2,5 @@ huebridge_ip:192.168.1.1
 sensor_name:huecontroller_detector
 light_name:huecontroller_light
 debug:1
+hue_api_token:enter_your_token_here
+store_objects_in_files:1

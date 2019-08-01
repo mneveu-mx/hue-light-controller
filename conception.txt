@@ -2,9 +2,15 @@ Fonction de pilotage Lampe Hue pour une pièce
 Contrôle en fonction d'un détecteur de présence Hue
 
 Script bash
+Stocke les valeurs des lumières/détecteurs dans datas/
 
 Entrants : fichier configuration
 @IP Pont Hue : @IPv4
 Nom lumière à controler : chaine caractères
 Nom capteur : chaine caractères
 Pause anti-rebond : Nbre seconde > 0
+
+
+Dépendances
+curl
+
