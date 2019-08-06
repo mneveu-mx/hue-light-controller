@@ -5,3 +5,4 @@ debug:1
 hue_api_token:enter_your_token_here
 store_objects_in_files:1
 sensor_controller:sensor_name
+seconds_between_detection:20

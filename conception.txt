@@ -17,3 +17,4 @@ curl
 TODO
 Création des dossiers si non existants
 Redécouvrir les lumières toutes les heures
+logrotate

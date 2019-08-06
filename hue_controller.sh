@@ -4,12 +4,15 @@ set -u
 set -o pipefail
 ##### VARIABLES ######
 CONFIG_FILE="hue_controller.yml"
-MANDATORY_PARAMETERS=( conf_huebridge_ip conf_sensor_name conf_light_name conf_debug conf_hue_api_token conf_store_objects_in_files )
+MANDATORY_PARAMETERS=( conf_huebridge_ip conf_sensor_name conf_light_name conf_debug conf_hue_api_token conf_store_objects_in_files conf_seconds_between_detection )
 PATH_DATAS="datas"
 PATH_STORE_LIGHTS=$PATH_DATAS"/lights"
 PATH_STORE_SENSORS=$PATH_DATAS"/sensors"
+FILE_STORE_HISTORY_DETECTED=$PATH_DATAS"/detected_history.log"
 FILE_INDEX_LIGHTS=$PATH_DATAS"/index_lights.mx"
 FILE_INDEX_SENSORS=$PATH_DATAS"/index_sensors.mx"
+TIMESTAMP_LAST_DETECTED=0
+
 
 ######################
 
@@ -67,6 +70,7 @@ create_status_file() {
 }
 
 clean_status_files() {
+	test $conf_debug -eq 1 && echo "Delete files from "$1"/*"
 	rm -rf $1"/*"
 }
 
@@ -77,6 +81,11 @@ get_json_value() {
 get_json_sensor_value() {
 	get_json_value $PATH_STORE_SENSORS"/"$conf_sensor_name $1
 }
+
+log_time() {
+	echo $(date -d@$1) > $FILE_STORE_HISTORY_DETECTED
+}
+
 echo "Hue controller @MNE_v0.1 : August 2018"
 
 echo "Lecture du fichier de configuration : $CONFIG_FILE"
@@ -95,16 +104,50 @@ get_index_sensors $FILE_INDEX_SENSORS
 test $conf_debug -eq 1 && echo $(cat $FILE_INDEX_LIGHTS);
 test $conf_debug -eq 1 && echo $(cat $FILE_INDEX_SENSORS);
 
-echo "Créer 1 fichier statut par équipement Hue"
 clean_status_files $PATH_STORE_LIGHTS
-create_status_file example_lights.json "lights" $PATH_STORE_LIGHTS $FILE_INDEX_LIGHTS
-
 clean_status_files $PATH_STORE_SENSORS
-create_status_file example_sensors.json "sensors" $PATH_STORE_SENSORS $FILE_INDEX_SENSORS
 
 echo "Controller"
 test $conf_debug -eq 1 && echo "\""$conf_light_name"\" controlled by \""$conf_sensor_name"\""
 
 echo "Vérification état sensor"
-SENSOR_ON=$(get_json_sensor_value ".config.on")
-SENSOR_REACHABLE=$(get_json_sensor_value ".config.reachable")
+while true
+do
+	sleep 0.5
+	#curl
+	create_status_file example_lights.json "lights" $PATH_STORE_LIGHTS $FILE_INDEX_LIGHTS
+	create_status_file example_sensors.json "sensors" $PATH_STORE_SENSORS $FILE_INDEX_SENSORS
+
+	SENSOR_ON=$(get_json_sensor_value ".config.on")
+	SENSOR_REACHABLE=$(get_json_sensor_value ".config.reachable")
+	SENSOR_LAST_DETECTED_DATE=$(get_json_sensor_value ".state.lastupdated" | tr -d '"')
+	SENSOR_LAST_DETECTED=$(date -d$SENSOR_LAST_DETECTED_DATE +%s)
+	
+	#LIGHT_REACHEABLE=
+	#LIGHT_ON=
+	test $conf_debug -eq 1 && echo "sensor[on]:"$SENSOR_ON
+	test $conf_debug -eq 1 && echo "sensor[reachable]:"$SENSOR_REACHABLE
+	test $conf_debug -eq 1 && echo "sensor[lastupdated]:"$SENSOR_LAST_DETECTED_DATE"/"$SENSOR_LAST_DETECTED
+	#test $conf_debug -eq 1 && echo "light[reachable]:"$LIGHT_REACHABLE
+	#test $conf_debug -eq 1 && echo "light[on]:'$LIGHT_ON
+
+	if [[ $TIMESTAMP_LAST_DETECTED -eq 0 ]]
+	then
+		TIMESTAMP_LAST_DETECTED=$SENSOR_LAST_DETECTED;
+		log_time $TIMESTAMP_LAST_DETECTED
+	fi
+	
+	#Si le détecteur est reachable ainsi que la lumière : TODO
+
+	difference_seconds=$(($SENSOR_LAST_DETECTED-$TIMESTAMP_LAST_DETECTED))
+	test $conf_debug -eq 1 && echo "Time since last detection : "$difference_seconds" seconds"
+
+	if [[ $difference_seconds -gt $conf_seconds_between_detection ]]
+	then
+		test $conf_debug -eq 1 && echo "Now detected : "$SENSOR_LAST_DETECTED
+		TIMESTAMP_LAST_DETECTED=$SENSOR_LAST_DETECTED
+		#Send_state
+		log_time $TIMESTAMP_LAST_DETECTED
+	fi
+
+done
