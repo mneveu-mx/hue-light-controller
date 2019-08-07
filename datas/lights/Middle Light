@@ -12,7 +12,9 @@
     "alert": "none",
     "effect": "none",
     "colormode": "hs",
-    "reachable": true
+    "reachable": true,
+    "rgb": "value",
+    "rgbe": "value"
   },
   "type": "Extended color light",
   "name": "Middle Light",

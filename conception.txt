@@ -22,3 +22,8 @@ Redécouvrir les lumières toutes les heures
 logrotate
 translate to english
 documentation
+Revoir la mécanique d'enrichissement : pas suffisamment performant
+
+Notes
+Possibles d'ajouter dans l'arbre avec cette commande : 
+jq '.state += {"rgb":"toto"}' datas/lights/Corner\ Light
