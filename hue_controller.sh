@@ -5,7 +5,7 @@ set -o pipefail
 ######################
 ##### VARIABLES ######
 CONFIG_FILE="hue_controller.yml"
-MANDATORY_PARAMETERS=( conf_huebridge_ip conf_debug conf_hue_api_token conf_store_objects_in_files conf_activate_controller )
+MANDATORY_PARAMETERS=( conf_huebridge_ip conf_debug conf_hue_api_token conf_store_objects_in_files conf_activate_controller conf_disable_preprocessing )
 MANDATORY_CONTROLLER_PARAMETERS=( conf_sensor_name conf_light_name conf_seconds_between_detection )
 PATH_DATAS="datas"
 PATH_STORE_LIGHTS=$PATH_DATAS"/lights"
@@ -116,6 +116,16 @@ log_time() {
 	echo $(date -d@$1) > $FILE_STORE_HISTORY_DETECTED
 }
 
+enrich_json_with_arg() {
+	echo $tmp_json | jq ".$1 += {\"$2\":\"$3\"}"
+}
+
+enrich_rgb() {
+	#Unable to find a bash script for convert xyz to srgb
+	#Maybe TODO
+	tmp_json=$(enrich_json_with_arg "state" "srgb" "to_be_done")
+}
+
 switch_light() {
 	to_string="OFF"
 	to_json="false"
@@ -158,12 +168,28 @@ else
 	log "Controller not activated (cf configuration file)"
 fi
 
+tmp_json=""
+
 while true
 do
 	sleep $SLEEP_TIME
 	#curl
 	create_status_file example_lights.json "lights" $PATH_STORE_LIGHTS $FILE_INDEX_LIGHTS
 	create_status_file example_sensors.json "sensors" $PATH_STORE_SENSORS $FILE_INDEX_SENSORS
+	
+	#Enrichissement 
+	if [[ $conf_disable_preprocessing -eq 0 ]]
+	then
+		log "Enrich datas for lights (rgb color)"
+		for entry in "$PATH_STORE_LIGHTS"/*
+		do
+			tmp_json=$(cat $entry)
+			enrich_rgb
+			echo $tmp_json > "$entry"
+		done
+		log_debug "End of processing"
+	fi
+	
 	if [[ $conf_activate_controller -eq 1 ]]
 	then
 		SENSOR_ON=$(get_json_sensor_value ".config.on")

@@ -8,4 +8,4 @@ sensor_controller:sensor_name
 seconds_between_detection:20
 #activate_controller -> 1:Activate // 0:Unactivate
 activate_controller:1
-disable_preprocessing:0
+disable_preprocessing:1
