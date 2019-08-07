@@ -13,8 +13,12 @@ Pause anti-rebond : Nbre seconde > 0
 
 Dépendances
 curl
+jq
+bash
 
 TODO
 Création des dossiers si non existants
 Redécouvrir les lumières toutes les heures
 logrotate
+translate to english
+documentation
