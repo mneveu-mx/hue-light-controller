@@ -250,6 +250,8 @@ do
 			log "Sensor is reachable : "$SENSOR_REACHABLE
 		fi
 	fi
+
+	#It is possible the hue bridge don't answer properly...
 	get_hue || hue_response=""
 	while [ -z "$(echo "$hue_response" | jq ".lights")" ] && [ -z "$(echo "$hue_response" | jq ".sensors")" ];
 	do
