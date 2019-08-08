@@ -1,0 +1,14 @@
+{
+  "state": {
+    "on": true,
+    "bri": 254,
+    "alert": "select",
+    "reachable": true
+  },
+  "type": "Dimmable light",
+  "name": "LUX_Chambre",
+  "modelid": "LWB004",
+  "manufacturername": "Philips",
+  "uniqueid": "00:17:88:01:00:de:27:90-0b",
+  "swversion": "5.127.1.26420"
+}

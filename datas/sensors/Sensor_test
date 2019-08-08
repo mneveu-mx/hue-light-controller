@@ -1,0 +1,23 @@
+{
+  "state": {
+    "presence": true,
+    "lastupdated": "2019-08-08T18:31:58"
+  },
+  "config": {
+    "on": true,
+    "battery": 100,
+    "reachable": true,
+    "alert": "none",
+    "ledindication": false,
+    "usertest": false,
+    "sensitivity": 0,
+    "sensitivitymax": 2,
+    "pending": []
+  },
+  "name": "Sensor_test",
+  "type": "ZLLPresence",
+  "modelid": "SML001",
+  "manufacturername": "Philips",
+  "swversion": "6.1.0.18912",
+  "uniqueid": "00:17:88:01:04:b4:52:64-02-0406"
+}

@@ -1,1 +1,16 @@
-huecontroller_detector=1
+Daylight=1
+MotionSensor 8.Companion=10
+Routine.companion=11
+Routine.companion=12
+Routine.companion=13
+Hue temperature sensor 2=14
+Sensor_test=15
+Hue ambient light sensor 2=16
+Hue tap switch 1=2
+TapToggle.2.1=3
+TapToggle.2.2=4
+TapToggle.2.3=5
+TapToggle.2.4=6
+Hue temperature sensor 1=7
+Mouvement_SDB=8
+Hue ambient light sensor 1=9

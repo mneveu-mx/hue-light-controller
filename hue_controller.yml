@@ -1,11 +1,12 @@
-huebridge_ip:192.168.1.1
-sensor_name:huecontroller_detector
-light_name:Corner Light
+huebridge_ip:192.168.1.53
+sensor_name:Sensor_test
+light_name:LUX_Chambre
 debug:1
-hue_api_token:enter_your_token_here
+hue_api_token:FHZToMU3yj6k7OPkexAZRPuS2qXtfr-AsoWCghq9
 store_objects_in_files:1
 sensor_controller:sensor_name
-seconds_between_detection:20
+seconds_between_detection:19
 #activate_controller -> 1:Activate // 0:Unactivate
 activate_controller:1
 disable_preprocessing:1
+create_status_files_only_needed:1

@@ -1,3 +1,4 @@
-Middle Light=1
-Far Light=2
-Corner Light=3
+LUX_Chambre=1
+HUE_SDB=3
+HUE_Lighstrip_Dehors=4
+HUE_Salle=5

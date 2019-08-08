@@ -6,7 +6,7 @@ set -o pipefail
 ##### VARIABLES ######
 CONFIG_FILE="hue_controller.yml"
 MANDATORY_PARAMETERS=( conf_huebridge_ip conf_debug conf_hue_api_token conf_store_objects_in_files conf_activate_controller conf_disable_preprocessing )
-MANDATORY_CONTROLLER_PARAMETERS=( conf_sensor_name conf_light_name conf_seconds_between_detection )
+MANDATORY_CONTROLLER_PARAMETERS=( conf_sensor_name conf_light_name conf_seconds_between_detection conf_create_status_files_only_needed )
 PATH_DATAS="datas"
 PATH_STORE_LIGHTS=$PATH_DATAS"/lights"
 PATH_STORE_SENSORS=$PATH_DATAS"/sensors"
@@ -14,7 +14,7 @@ FILE_STORE_HISTORY_DETECTED=$PATH_DATAS"/detected_history.log"
 FILE_INDEX_LIGHTS=$PATH_DATAS"/index_lights.mx"
 FILE_INDEX_SENSORS=$PATH_DATAS"/index_sensors.mx"
 TIMESTAMP_LAST_DETECTED=0
-SLEEP_TIME=0.5
+SLEEP_TIME=0.0
 ##### CONSTANTS ######
 ON=1
 OFF=0
@@ -73,7 +73,7 @@ check_file_is_updated() {
 
 get_index_lights() {
 	#curl $HUE_API_URL"/"$1 \
-	cat example_lights.json \
+	echo $hue_response \
 	| jq -r '.lights | keys[] as $k | "\(.[$k].name)=\($k)"' 1>$1 || (log "L'index $(basename $1) n'a pas été correctement récupéré ou parsé" && exit 1)
 	check_file_is_updated $1 2 
 }
@@ -81,7 +81,7 @@ get_index_lights() {
 
 get_index_sensors() {
 	#curl $HUE_API_URL"/"$1 \
-	cat example_sensors.json \
+	echo $hue_response \
 	| jq -r '.sensors | keys[] as $k | "\(.[$k].name)=\($k)"' 1>$1 || (log "L'index $(basename $1) n'a pas été correctement récupéré ou parsé" && exit 1)
 	check_file_is_updated $1 2
 }
@@ -90,9 +90,17 @@ create_status_file() {
 	IFS="="
 	while read -r k v
 	do
-		cat $1 | jq ".$2.\"$v\"" > $3"/"$k
-	done < $4
-	log_debug $(ls $3 | wc -l)" created file(s) for "$2
+		if [ $conf_activate_controller -eq 1 ] && [ $conf_create_status_files_only_needed -eq 1 ]
+		then
+			if [ $4 = $k ]
+			then
+				echo $hue_response | jq ".$1.\"$v\"" > $2"/"$k
+			fi
+		else
+			echo $hue_response | jq ".$1.\"$v\"" > $2"/"$k
+		fi
+	done < $3
+	log_debug $(ls $2 | wc -l)" created file(s) for "$1
 }
 
 clean_status_files() {
@@ -113,7 +121,7 @@ get_json_light_value() {
 }
 
 log_time() {
-	echo $(date -d@$1) > $FILE_STORE_HISTORY_DETECTED
+	echo $(date -d@$1) >> $FILE_STORE_HISTORY_DETECTED
 }
 
 enrich_json_with_arg() {
@@ -134,8 +142,12 @@ switch_light() {
 		to_string="ON";
 		to_json="true";
 	fi
-	#curl -X POST -H "Content-Type: application/json" -d '{"on":"$to_json"}' $HUE_API_URL"lights/"$2"/state"
+	curl -X PUT -H "Content-Type: application/json" -d "{\"on\":$to_json}" $HUE_API_URL"lights/"$2"/state" 1>/dev/null
 	log_debug "Switch light \""$conf_light_name"\" "$to_string
+}
+
+get_hue(){
+	hue_response=$(curl $HUE_API_URL)
 }
 
 ###############
@@ -146,6 +158,7 @@ check_params
 
 ## Paramètres HUE ##
 HUE_API_URL="http://"$conf_huebridge_ip"/api/"$conf_hue_api_token"/"
+get_hue
 log "Indexes discovery and store on ./"$PATH_DATAS"/*.mx files"
 get_index_lights $FILE_INDEX_LIGHTS
 get_index_sensors $FILE_INDEX_SENSORS
@@ -169,13 +182,13 @@ else
 fi
 
 tmp_json=""
-
+echo "" > $FILE_STORE_HISTORY_DETECTED
 while true
 do
 	sleep $SLEEP_TIME
 	#curl
-	create_status_file example_lights.json "lights" $PATH_STORE_LIGHTS $FILE_INDEX_LIGHTS
-	create_status_file example_sensors.json "sensors" $PATH_STORE_SENSORS $FILE_INDEX_SENSORS
+	create_status_file "lights" $PATH_STORE_LIGHTS $FILE_INDEX_LIGHTS $conf_light_name
+	create_status_file "sensors" $PATH_STORE_SENSORS $FILE_INDEX_SENSORS $conf_sensor_name
 	
 	#Enrichissement 
 	if [[ $conf_disable_preprocessing -eq 0 ]]
@@ -215,17 +228,21 @@ do
 		then
 			difference_seconds=$(($SENSOR_LAST_DETECTED-$TIMESTAMP_LAST_DETECTED))
 			log_debug "Time since last detection : "$difference_seconds" seconds"
-			if [[ $difference_seconds -gt $conf_seconds_between_detection ]]
+			if [[ $difference_seconds -gt 0 ]]
 			then
-				log_debug "Now detected : "$SENSOR_LAST_DETECTED
-				TIMESTAMP_LAST_DETECTED=$SENSOR_LAST_DETECTED
-				if [[ $LIGHT_ON = "true" ]]
+				#log_debug $SENSOR_LAST_DETECTED
+				if [[ $difference_seconds -gt $conf_seconds_between_detection ]]
 				then
-					switch_light $ON $oper_light_index
-				else
-					switch_light $OFF $oper_light_index
+					log_debug "Now detected : "$SENSOR_LAST_DETECTED
+					TIMESTAMP_LAST_DETECTED=$SENSOR_LAST_DETECTED
+					if [[ $LIGHT_ON = "true" ]]
+					then
+						switch_light $OFF $oper_light_index
+					else
+						switch_light $ON $oper_light_index
+					fi
+					log_time $TIMESTAMP_LAST_DETECTED
 				fi
-				log_time $TIMESTAMP_LAST_DETECTED
 			fi
 		else
 			log "Cannot control light because almost one equipment is unreachable, see details below :"
@@ -233,4 +250,10 @@ do
 			log "Sensor is reachable : "$SENSOR_REACHABLE
 		fi
 	fi
+	get_hue || hue_response=""
+	while [ -z "$(echo "$hue_response" | jq ".lights")" ] && [ -z "$(echo "$hue_response" | jq ".sensors")" ];
+	do
+		sleep 0.5 && log "Failed to get from hue, retry..."
+		get_hue || hue_response=""
+	done
 done
