@@ -147,7 +147,7 @@ switch_light() {
 }
 
 get_hue(){
-	hue_response=$(curl $HUE_API_URL)
+	hue_response=$(curl $HUE_API_URL -m 2)
 }
 
 ###############

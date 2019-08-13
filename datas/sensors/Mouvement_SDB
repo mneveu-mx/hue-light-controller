@@ -1,11 +1,11 @@
 {
   "state": {
-    "presence": true,
-    "lastupdated": "2019-08-08T18:31:58"
+    "presence": false,
+    "lastupdated": "2019-08-13T11:33:55"
   },
   "config": {
     "on": true,
-    "battery": 100,
+    "battery": null,
     "reachable": true,
     "alert": "none",
     "ledindication": false,
@@ -14,10 +14,10 @@
     "sensitivitymax": 2,
     "pending": []
   },
-  "name": "Sensor_test",
+  "name": "Mouvement_SDB",
   "type": "ZLLPresence",
   "modelid": "SML001",
   "manufacturername": "Philips",
-  "swversion": "6.1.0.18912",
-  "uniqueid": "00:17:88:01:04:b4:52:64-02-0406"
+  "swversion": "6.1.1.27575",
+  "uniqueid": "00:17:88:01:02:03:05:b7-02-0406"
 }

@@ -1,6 +1,6 @@
-huebridge_ip:192.168.1.53
-sensor_name:Sensor_test
-light_name:LUX_Chambre
+huebridge_ip:192.168.1.10
+sensor_name:Mouvement_SDB
+light_name:HUE_SDB
 debug:1
 hue_api_token:FHZToMU3yj6k7OPkexAZRPuS2qXtfr-AsoWCghq9
 store_objects_in_files:1
