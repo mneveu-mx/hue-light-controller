@@ -1,17 +1,17 @@
 {
   "state": {
-    "on": false,
-    "bri": 254,
-    "hue": 14988,
-    "sat": 141,
+    "on": true,
+    "bri": 104,
+    "hue": 42683,
+    "sat": 252,
     "effect": "none",
     "xy": [
-      0.4575,
-      0.4101
+      0.218,
+      0.1401
     ],
-    "ct": 366,
-    "alert": "select",
-    "colormode": "ct",
+    "ct": 153,
+    "alert": "none",
+    "colormode": "xy",
     "reachable": true
   },
   "type": "Extended color light",

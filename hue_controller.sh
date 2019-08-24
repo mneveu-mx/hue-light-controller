@@ -6,7 +6,7 @@ set -o pipefail
 ##### VARIABLES ######
 CONFIG_FILE="hue_controller.yml"
 MANDATORY_PARAMETERS=( conf_huebridge_ip conf_debug conf_hue_api_token conf_store_objects_in_files conf_activate_controller conf_disable_preprocessing )
-MANDATORY_CONTROLLER_PARAMETERS=( conf_sensor_name conf_light_name conf_seconds_between_detection conf_create_status_files_only_needed )
+MANDATORY_CONTROLLER_PARAMETERS=( conf_sensor_name conf_light_name conf_seconds_between_detection conf_create_status_files_only_needed conf_color_day conf_color_night conf_hour_night conf_hour_morning )
 PATH_DATAS="datas"
 PATH_STORE_LIGHTS=$PATH_DATAS"/lights"
 PATH_STORE_SENSORS=$PATH_DATAS"/sensors"
@@ -121,7 +121,7 @@ get_json_light_value() {
 }
 
 log_time() {
-	echo $(date -d@$1) >> $FILE_STORE_HISTORY_DETECTED
+	echo $(date -d@$1 +"%Y/%m/%d, %H:%M:%S") >> $FILE_STORE_HISTORY_DETECTED
 }
 
 enrich_json_with_arg() {
@@ -137,12 +137,20 @@ enrich_rgb() {
 switch_light() {
 	to_string="OFF"
 	to_json="false"
+	options=""
 	if [[ $1 -eq $ON ]]
 	then
 		to_string="ON";
 		to_json="true";
+		actual_hour=$(date +%H);
+		if [ $actual_hour -lt $conf_hour_day ] || [ $actual_hour -ge $conf_hour_night ]
+		then
+			options=$conf_color_night
+		else
+			options=$conf_color_morning
+		fi
 	fi
-	curl -X PUT -H "Content-Type: application/json" -d "{\"on\":$to_json}" $HUE_API_URL"lights/"$2"/state" 1>/dev/null
+	curl -X PUT -H "Content-Type: application/json" -d "{\"on\":$to_json$options}" $HUE_API_URL"lights/"$2"/state" 1>/dev/null
 	log_debug "Switch light \""$conf_light_name"\" "$to_string
 }
 
@@ -182,7 +190,7 @@ else
 fi
 
 tmp_json=""
-echo "" > $FILE_STORE_HISTORY_DETECTED
+touch -a $FILE_STORE_HISTORY_DETECTED
 while true
 do
 	sleep $SLEEP_TIME

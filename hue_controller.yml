@@ -10,3 +10,11 @@ seconds_between_detection:19
 activate_controller:1
 disable_preprocessing:1
 create_status_files_only_needed:1
+#White
+color_day:,\"bri\":254,\"hue\":14988,\"sat\":141,\"ct\":366,\"xy\":[0.4575,0.4101]
+#Blue
+color_night:,\"bri\":104,\"hue\":14988,\"sat\":141,\"ct\":156,\"xy\":[0.2178,0.1398]
+#Included
+hour_night:23
+#Not included
+hour_morning:7
