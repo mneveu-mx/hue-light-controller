@@ -1,11 +1,11 @@
 {
   "state": {
-    "presence": false,
-    "lastupdated": "2019-08-24T11:08:55"
+    "presence": true,
+    "lastupdated": "2019-08-24T19:53:53"
   },
   "config": {
     "on": true,
-    "battery": 75,
+    "battery": 76,
     "reachable": true,
     "alert": "none",
     "ledindication": false,

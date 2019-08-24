@@ -143,7 +143,7 @@ switch_light() {
 		to_string="ON";
 		to_json="true";
 		actual_hour=$(date +%H);
-		if [ $actual_hour -lt $conf_hour_day ] || [ $actual_hour -ge $conf_hour_night ]
+		if [ $actual_hour -lt $conf_hour_morning ] || [ $actual_hour -ge $conf_hour_night ]
 		then
 			options=$conf_color_night
 		else
