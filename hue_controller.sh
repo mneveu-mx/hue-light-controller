@@ -147,7 +147,7 @@ switch_light() {
 		then
 			options=$conf_color_night
 		else
-			options=$conf_color_morning
+			options=$conf_color_day
 		fi
 	fi
 	curl -X PUT -H "Content-Type: application/json" -d "{\"on\":$to_json$options}" $HUE_API_URL"lights/"$2"/state" 1>/dev/null
